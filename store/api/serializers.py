@@ -6,20 +6,20 @@ from django.contrib.auth.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['url', 'username', 'email', 'groups']
+        fields = ['id', 'username', 'email', 'groups']
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['url', 'name']
+        fields = ['id', 'name']
 
 
 class ProductSerializers(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'url',
+            'id',
             'user',
             'bar_code',
             'name',
@@ -30,15 +30,16 @@ class ProductSerializers(serializers.ModelSerializer):
             'image',
             'on_display',
             'created',
+            'total_cost'
         ]
 
 class ProductTransactionSerializers(serializers.ModelSerializer):
     class Meta:
         model = ProductTransaction
         fields = [
-            'url',
+            'id',
             'user',
             'product',
             'cost',
-            'quantity',
+            'quantity'
         ]

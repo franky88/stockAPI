@@ -80,19 +80,6 @@ class ProductTransaction(models.Model):
 
     def __str__(self):
         return self.product.name
-
-class Customer(models.Model):
-    customer_id = models.CharField(max_length=12, unique=True, blank=True, null=True)
-    name = models.CharField(max_length=200, unique=True)
-    contact = models.CharField(max_length=20, blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    created = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-created']
-
-    def __str__(self):
-        return self.name
     
 class OrderTransaction(models.Model):
     order_id = models.CharField(max_length=12, unique=True)
@@ -134,15 +121,6 @@ class OrderTransaction(models.Model):
     def __str__(self):
         return self.customer.username
 
-class CustomerOrder(TimeStampedModel):
-    order_id = models.CharField(max_length=100, unique=True)
-    orders = models.ForeignKey(OrderTransaction, on_delete=models.CASCADE)
-    class Meta:
-        ordering = ['-created']
-    
-    def __str__(self):
-        return self.order_id
-
 
 class ItemRequest(models.Model):
     request_by = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -163,15 +141,3 @@ def order_pro_save(sender, instance, created, *args, **kwargs):
         uuid_code = str(uuid.uuid4()).replace("-", "").upper()[:8]
         instance.order_id = uuid_code
         instance.save()
-
-@receiver(pre_save, sender=Customer)
-def customer_id_pre_save(sender, instance, *args, **kwargs):
-    if instance.customer_id == None:
-        uuid_code = str(uuid.uuid4()).replace("-", "").upper()[:12]
-        instance.customer_id = uuid_code
-
-@receiver(pre_save, sender=CustomerOrder)
-def customer_order_id_pre_save(sender, instance, *args, **kwargs):
-    if instance.order_id == None:
-        uuid_code = str(uuid.uuid4()).replace("-", "").upper()[:12]
-        instance.order_id = uuid_code

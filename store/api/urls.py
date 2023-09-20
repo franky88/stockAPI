@@ -1,13 +1,15 @@
 from django.urls import path, include
-from rest_framework import routers
-from store.api.views import ProductViewSet, CategoryViewSet, ProductTransactionViewSet
-
-router = routers.DefaultRouter()
-router.register(r'products', ProductViewSet)
-router.register(r'categories', CategoryViewSet)
-router.register(r'products-transactions', ProductTransactionViewSet)
-
+# from rest_framework import routers
+from store.api.views import ProductList, ProductDetails, CategoryList, CategoryDetails, ProductTransactionList, ProductTransactionDetails
+from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('products/', ProductList.as_view()),
+    path('products/<int:pk>', ProductDetails.as_view()),
+    path('categories/', CategoryList.as_view()),
+    path('categories/<int:pk>', CategoryDetails.as_view()),
+    path('product-transactions/', ProductTransactionList.as_view()),
+    path('product-transactions/<int:pk>', ProductTransactionDetails.as_view())
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
