@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from store.models import Product, Category, ProductTransaction
+from store.models import Product, Category, ProductTransaction, OrderTransaction
 from django.contrib.auth.models import User
 
 
@@ -42,4 +42,18 @@ class ProductTransactionSerializers(serializers.ModelSerializer):
             'product',
             'cost',
             'quantity'
+        ]
+
+
+class OrderTransactionSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = OrderTransaction
+        fields = [
+            'id',
+            'customer',
+            'product',
+            'price',
+            'quantity',
+            'total_cost',
+            'is_recent_orders'
         ]

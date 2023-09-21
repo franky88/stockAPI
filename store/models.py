@@ -87,7 +87,7 @@ class OrderTransaction(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.FloatField()
     quantity = models.PositiveIntegerField()
-    total_amount = models.FloatField()
+    # total_amount = models.FloatField()
     is_paid = models.BooleanField(default=False)
     is_accepted = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
@@ -96,7 +96,7 @@ class OrderTransaction(models.Model):
         ordering = ['-is_accepted','-created']
 
     @property
-    def get_cost(self):
+    def total_cost(self):
         cost = self.price * self.quantity
         return cost
     
@@ -108,7 +108,7 @@ class OrderTransaction(models.Model):
     @property
     def balance(self):
         if not self.is_paid:
-            balance = self.get_cost
+            balance = self.total_cost
         else:
             balance = 0.0
         return balance

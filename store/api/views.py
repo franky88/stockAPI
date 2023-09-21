@@ -1,9 +1,12 @@
-from store.models import Product, Category, ProductTransaction
+from store.models import Product, Category, ProductTransaction, OrderTransaction
 from rest_framework import permissions, viewsets, status
-from django.http import Http404
+from django.http import Http404, HttpResponse, JsonResponse
 from rest_framework.views import APIView
-from store.api.serializers import ProductSerializers, CategorySerializer, ProductTransactionSerializers
+from store.api.serializers import ProductSerializers, CategorySerializer, ProductTransactionSerializers, OrderTransactionSerializers
 from rest_framework.response import Response
+from store.cartitems import Cart
+from django.core import serializers
+from django.shortcuts import get_object_or_404
 
 
 class ProductList(APIView):
@@ -107,7 +110,15 @@ class ProductTransactionList(APIView):
     def post(self, request, format=None):
         transaction = ProductTransactionSerializers(data=request.data)
         if transaction.is_valid():
-            transaction.save()
+            instance = transaction.save()
+            instance.user = request.user
+            instance.product.quantity += instance.quantity
+            if instance.cost:
+                instance.product.cost = instance.new_cost
+            else:
+                instance.cost = instance.product.cost
+            instance.product.save()
+            instance.save()
             return Response(transaction.data, status=status.HTTP_201_CREATED)
         return Response(transaction.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -136,13 +147,94 @@ class ProductTransactionDetails(APIView):
     
     def delete(self, request, pk, format=None):
         transaction = self.get_object(pk)
+        if transaction.product.quantity < transaction.quantity:
+            return HttpResponse({"quantity is out of range"})
+        transaction.product.quantity -= transaction.quantity
+        transaction.product.save()
         transaction.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
 
-# class ProductTransactionViewSet(viewsets.ModelViewSet):
-#     """
-#     API endpoint that allows product transaction to be viewed or edited.
-#     """
-#     queryset = ProductTransaction.objects.all()
-#     serializer_class = ProductTransactionSerializers
-#     permission_classes = [permissions.AllowAny]
+class OrderTransactionSerializersList(APIView):
+    """
+    List all product transactions, or create a new product transaction.
+    """
+    def get(self, request, format=None):
+        transaction = OrderTransaction.objects.all()
+        serializer = OrderTransactionSerializers(transaction, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, format=None):
+        transaction = OrderTransactionSerializers(data=request.data)
+        if transaction.is_valid():
+            transaction.save()
+            return Response(transaction.data, status=status.HTTP_201_CREATED)
+        return Response(transaction.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ProductOrderList(APIView):
+    """
+    List all product in cart.
+    """
+    def get(self, request, format=None):
+        cart = Cart(request)
+        cart_data = cart.get_cart_data()
+        return Response(cart_data)
+    
+class AddProductOrder(APIView):
+    """
+    Add product in cart
+    """
+    def get(self, request, pk, format=None):
+        cart = Cart(request)
+        product = get_object_or_404(Product, pk=pk)
+        if product:
+            cart.add(product=product, quantity=1, update_quantity=False)
+            cart_data = cart.get_cart_data()
+            return Response(cart_data)
+        else:
+            return Response(status.HTTP_404_NOT_FOUND)
+        
+class MinusProductOrder(APIView):
+    """
+    Add product quantity
+    """
+    def get(self, request, pk, format=None):
+        cart = Cart(request)
+        product = get_object_or_404(Product, pk=pk)
+        if product:
+            cart.minus(product=product, quantity=1, update_quantity=False)
+            cart_data = cart.get_cart_data()
+            return Response(cart_data)
+        else:
+            return Response(status.HTTP_404_NOT_FOUND)
+    
+class ClearCartList(APIView):
+    def get(self, request):
+        cart = Cart(request)
+        if cart:
+            cart.clear()
+            return Response(status.HTTP_200_OK)
+        else:
+            return Response(status.HTTP_200_OK)
+        
+
+class ProcessOrderItems(APIView):
+    def get(self, request):
+        cart = Cart(request)
+        cart_data = cart.get_cart_data()
+        return Response(cart_data)
+    
+    def post(self, request):
+        cart = Cart(request)
+        for item in cart:
+            order = OrderTransaction(
+                customer = request.user,
+                product = item['product'],
+                price = item['price'],
+                quantity = item['quantity']
+            )
+            order.product.quantity -= order.quantity
+            order.product.save()
+            order.save()
+        cart.clear()
+        return Response(status.HTTP_202_ACCEPTED)
