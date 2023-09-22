@@ -2,11 +2,19 @@ from store.models import Product, Category, ProductTransaction, OrderTransaction
 from rest_framework import permissions, viewsets, status
 from django.http import Http404, HttpResponse, JsonResponse
 from rest_framework.views import APIView
-from store.api.serializers import ProductSerializers, CategorySerializer, ProductTransactionSerializers, OrderTransactionSerializers
+from store.api.serializers import ProductSerializers, CategorySerializer, ProductTransactionSerializers, OrderTransactionSerializers, UserSerializers
 from rest_framework.response import Response
 from store.cartitems import Cart
 from django.core import serializers
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+
+
+class UserList(APIView):
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializers(users, many=True)
+        return Response(serializer.data)
 
 
 class ProductList(APIView):
@@ -170,6 +178,40 @@ class OrderTransactionSerializersList(APIView):
             transaction.save()
             return Response(transaction.data, status=status.HTTP_201_CREATED)
         return Response(transaction.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class OrderTransactionSerializersDetails(APIView):
+
+    def get_object(self, pk):
+        try:
+            return OrderTransaction.objects.get(pk=pk)
+        except OrderTransaction.DoesNotExist:
+            raise Http404
+        
+    def get(self, request, pk):
+        transaction = self.get_object(pk)
+        serializer = OrderTransactionSerializers(transaction)
+        return Response(serializer.data)
+    
+    def patch(self, request, pk):
+        try:
+            transaction = self.get_object(pk)
+        except OrderTransaction.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the request data contains 'is_accepted' and update it
+        # is_accepted = request.data.get('is_accepted', None)
+        if transaction is not None:
+            if transaction.is_accepted:
+                return Response({"message": "Order aleady accepted!"}, status=status.HTTP_202_ACCEPTED)
+            else:
+                transaction.is_accepted = True
+                transaction.save()
+            # Serialize the updated object and return it
+            serializer = OrderTransactionSerializers(transaction)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Missing 'is_accepted' in request data"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ProductOrderList(APIView):
     """

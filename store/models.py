@@ -87,9 +87,9 @@ class OrderTransaction(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.FloatField()
     quantity = models.PositiveIntegerField()
-    # total_amount = models.FloatField()
     is_paid = models.BooleanField(default=False)
     is_accepted = models.BooleanField(default=False)
+    remarks = models.CharField(max_length=200, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:

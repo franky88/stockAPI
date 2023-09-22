@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-#e*j$@6a)19mtr^vcr3^*&x8m@r!ev02l_4c)!p$xii@$sf6a(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*", "http://localhost:5173/"]
 
 
 # Application definition
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'store'
 ]
 
@@ -49,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'stockAPI.urls'
@@ -132,3 +134,5 @@ REST_FRAMEWORK = {
 }
 
 CART_SESSION_ID = 'cart'
+
+CORS_ALLOW_ALL_ORIGINS = True

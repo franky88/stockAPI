@@ -50,10 +50,19 @@ class OrderTransactionSerializers(serializers.ModelSerializer):
         model = OrderTransaction
         fields = [
             'id',
+            'order_id',
             'customer',
             'product',
             'price',
             'quantity',
             'total_cost',
+            'is_accepted',
+            'is_paid',
+            'remarks',
             'is_recent_orders'
         ]
+
+class UserSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'get_short_name', 'email', 'last_login', 'date_joined']
