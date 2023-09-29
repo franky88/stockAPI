@@ -6,14 +6,13 @@ from django.contrib.auth.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
+        # fields = '__all__'
         fields = ['id', 'username', 'email', 'groups']
-
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name']
-
 
 class ProductSerializers(serializers.ModelSerializer):
     class Meta:
@@ -43,7 +42,6 @@ class ProductTransactionSerializers(serializers.ModelSerializer):
             'cost',
             'quantity'
         ]
-
 
 class OrderTransactionSerializers(serializers.ModelSerializer):
     class Meta:

@@ -1,40 +1,24 @@
 from django.urls import path, include
-# from rest_framework import routers
-from store.api.views import (ProductList, 
-                             ProductDetails,
-                             CategoryList,
-                             CategoryDetails,
-                             ProductTransactionList,
-                             ProductTransactionDetails,
-                             OrderTransactionSerializersList,
-                             OrderTransactionSerializersDetails,
-                             ProductOrderList,
-                             AddProductOrder,
-                             MinusProductOrder,
-                             ClearCartList,
-                             ProcessOrderItems,
-                             UserList,
+from rest_framework import routers
+from store.api.views import (
+                            UserViewSets,
+                            ProductViewSets,
+                            CategoryViewSets,
+                            ProductTransactionViewSets,
+                            OrderTransactionViewSets,
+                            ProductOrderViewSets
                              )
 from rest_framework.urlpatterns import format_suffix_patterns
 
+router = routers.DefaultRouter()
+
+router.register(r'users', UserViewSets, basename="user")
+router.register(r'categories', CategoryViewSets, basename="categories")
+router.register(r'product-transactions', ProductTransactionViewSets, basename="transactions")
+router.register(r'products/orders', ProductOrderViewSets, basename="product-orders")
+router.register(r'products', ProductViewSets, basename="products")
+router.register(r'orders', OrderTransactionViewSets, basename="orders")
+
 urlpatterns = [
-    path('users/', UserList.as_view()),
-
-    path('products/', ProductList.as_view()),
-    path('products/<int:pk>', ProductDetails.as_view()),
-    path('products/orders/', ProductOrderList.as_view(), name="order"),
-    path('products/orders/clear/', ClearCartList.as_view()),
-    path('products/orders/add/<int:pk>', AddProductOrder.as_view(), name="add"),
-    path('products/orders/minus/<int:pk>', MinusProductOrder.as_view(), name="minus"),
-
-    path('categories/', CategoryList.as_view()),
-    path('categories/<int:pk>', CategoryDetails.as_view()),
-    path('product-transactions/', ProductTransactionList.as_view()),
-    path('product-transactions/<int:pk>', ProductTransactionDetails.as_view()),
-    path('order-transactions/', OrderTransactionSerializersList.as_view()),
-    path('order-transactions/<int:pk>', OrderTransactionSerializersDetails.as_view()),
-
-    path('orders/', ProcessOrderItems.as_view())
+    path('', include(router.urls)),
 ]
-
-urlpatterns = format_suffix_patterns(urlpatterns)
