@@ -15,7 +15,7 @@ router = routers.DefaultRouter()
 router.register(r'users', UserViewSets, basename="user")
 router.register(r'categories', CategoryViewSets, basename="categories")
 router.register(r'product-transactions', ProductTransactionViewSets, basename="transactions")
-router.register(r'products/orders', ProductOrderViewSets, basename="product-orders")
+router.register(r'cart', ProductOrderViewSets, basename="cart")
 router.register(r'products', ProductViewSets, basename="products")
 router.register(r'orders', OrderTransactionViewSets, basename="orders")
 

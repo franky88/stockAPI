@@ -45,7 +45,7 @@ class ProductViewSets(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     @action(detail=False)
-    def unpublished_products(self, request):
+    def hidden_products(self, request):
         products = Product.objects.filter(on_display=False)
         page = self.paginate_queryset(products)
         if page is not None:
@@ -53,6 +53,39 @@ class ProductViewSets(viewsets.ModelViewSet):
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(products, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['GET','PUT'])
+    def hide_product(self, request, *args, **kwargs):
+        product = self.get_object()
+        if product:
+            product.on_display = False
+            product.save()
+            serializer = self.serializer_class(product)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=True, methods=['GET','PUT'])
+    def unhide_product(self, request, *args, **kwargs):
+        product = self.get_object()
+        if product:
+            product.on_display = True
+            product.save()
+            serializer = self.serializer_class(product)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=True, methods=['GET','POST'])
+    def add_product_order(self, request, *args, **kwargs):
+        product = self.get_object()
+        cart = Cart(self.request)
+        if product.on_display and product.quantity >= 0:
+            cart.add(product=product, quantity=1, update_quantity=False)
+            cart_data = cart.get_cart_data()
+            return Response(cart_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Please check product is on display or check the product quantity"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CategoryViewSets(viewsets.ModelViewSet):
     """
@@ -161,6 +194,7 @@ class OrderTransactionViewSets(viewsets.ModelViewSet):
     @action(detail=True, methods=['GET','PUT'])
     def unaccept_order(self, request, *args, **kwargs):
         obj = self.get_object()
+        print(obj)
         if obj is not None:
             if obj.is_accepted:
                 obj.is_accepted = False
@@ -171,71 +205,50 @@ class OrderTransactionViewSets(viewsets.ModelViewSet):
                 return Response({"message": "Order aleady unaccepted!"}, status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"detail": "Missing 'is_accepted' in request data"}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 
-class ProductOrderViewSets(viewsets.ModelViewSet):
+class ProductOrderViewSets(viewsets.ViewSet):
     """
-    List all product in cart.
+    List all product in cart, update and delete items in the cart.
     """
-    # queryset = OrderTransaction.objects.all()
-    # serializer_class = OrderTransactionSerializers
     permission_classes = [IsAuthenticated]
+    def list(self, request):
+        cart = Cart(self.request)
+        queryset = cart.get_cart_data()
+        return Response(queryset, status=status.HTTP_200_OK)
 
-    def list(self, request, *args, **kwargs):
-        cart = Cart(request)
-        cart_data = cart.get_cart_data()
-        return Response(cart_data)
+    @action(detail=False, methods=['GET'])
+    def get_cart_data(self, request):
+        cart = Cart(self.request)
+        items = cart.get_cart_data()
+        if items:
+            return Response(items, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'No items in the cart'}, status=status.HTTP_404_NOT_FOUND)
 
-    # def get(self, request, format=None):
-    #     cart = Cart(request)
-    #     cart_data = cart.get_cart_data()
-    #     return Response(cart_data)
-    
-# class AddProductOrder(APIView):
-#     """
-#     Add product in cart
-#     """
-#     def get(self, request, pk, format=None):
-#         cart = Cart(request)
-#         product = get_object_or_404(Product, pk=pk)
-#         if product:
-#             cart.add(product=product, quantity=1, update_quantity=False)
-#             cart_data = cart.get_cart_data()
-#             return Response(cart_data)
-#         else:
-#             return Response(status.HTTP_404_NOT_FOUND)
+    @action(detail=False, methods=['DELETE'])
+    def clear_cart_items(self, request, format=None):
+        cart = Cart(self.request)
+        items = cart.clear()
+        if items:
+            return Response(items, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'No items in the cart'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['DELETE'])
+    def delete_cart_item(self, request, pk=None, format=None):
+        instance = get_object_or_404(Product, pk=pk)
+        cart = Cart(self.request)
+        item = cart.remove(product=instance)
+        if item:
+            return Response(item, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'No items in the cart'}, status=status.HTTP_404_NOT_FOUND)
         
-# class MinusProductOrder(APIView):
-#     """
-#     Add product quantity
-#     """
-#     def get(self, request, pk, format=None):
-#         cart = Cart(request)
-#         product = get_object_or_404(Product, pk=pk)
-#         if product:
-#             cart.minus(product=product, quantity=1, update_quantity=False)
-#             cart_data = cart.get_cart_data()
-#             return Response(cart_data)
-#         else:
-#             return Response(status.HTTP_404_NOT_FOUND)
-    
-# class ClearCartList(APIView):
-#     def get(self, request):
-#         cart = Cart(request)
-#         if cart:
-#             cart.clear()
-#             return Response(status.HTTP_200_OK)
-#         else:
-#             return Response(status.HTTP_200_OK)
-        
-# class ProcessOrderItems(APIView):
-    def get(self, request):
-        cart = Cart(request)
-        cart_data = cart.get_cart_data()
-        return Response(cart_data)
-    
-    def post(self, request):
-        cart = Cart(request)
+    @action(detail=False, methods=['POST'])
+    def process_order(self, request, format=None):
+        cart = Cart(self.request)
         for item in cart:
             order = OrderTransaction(
                 customer = request.user,
@@ -247,4 +260,4 @@ class ProductOrderViewSets(viewsets.ModelViewSet):
             order.product.save()
             order.save()
         cart.clear()
-        return Response(status.HTTP_202_ACCEPTED)
+        return Response(status=status.HTTP_200_OK)
