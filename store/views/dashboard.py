@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.views import View
 from store.models import Product, Customer, Repair
+from django.utils import timezone
+import datetime
 
 class DashboardView(View):
     """
@@ -12,7 +14,12 @@ class DashboardView(View):
         total_display_products = Product.objects.filter(on_display=True).count()
         total_hidden_products = Product.objects.filter(on_display=False).count()
         total_customers = Customer.objects.all().count()
+        recent_customers = Customer.objects.filter(is_added_recently=True).count()
+        active_customers = Customer.objects.filter(is_active=True).count()
         total_repairs = Repair.objects.all().count()
+        on_going_repairs = Repair.objects.filter(status__name="on going").count()
+        pending_repairs = Repair.objects.filter(status__name="pending").count()
+        repaired_repairs = Repair.objects.filter(status__name="repaired").count()
         context = {
             "title": "Dashboard",
             "total_products": total_products,
@@ -20,5 +27,10 @@ class DashboardView(View):
             "total_hidden_products": total_hidden_products,
             "total_display_products": total_display_products,
             "total_repairs": total_repairs,
+            "recent_customers": recent_customers,
+            "active_customers": active_customers,
+            "on_going_repairs": on_going_repairs,
+            "pending_repairs": pending_repairs,
+            "repaired_repairs": repaired_repairs
         }
         return render(request, self.template_name, context)

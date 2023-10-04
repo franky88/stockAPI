@@ -16,7 +16,6 @@ class TimeStampedModel(models.Model):
     class Meta:
         ordering = ('-updated','-created')
 
-
 class Category(models.Model):
     name = models.CharField(max_length=120)
 
@@ -99,6 +98,7 @@ class Customer(models.Model):
     address = models.TextField(blank=True, null=True)
     contact = models.CharField(max_length=20, null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    is_added_recently = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -191,3 +191,12 @@ def order_pro_save(sender, instance, created, *args, **kwargs):
         uuid_code = str(uuid.uuid4()).replace("-", "").upper()[:8]
         instance.order_id = uuid_code
         instance.save()
+
+@receiver(post_save, sender=Customer)
+def is_added_recently_post_save(sender, instance, created, *args, **kwargs):
+    if created:
+        now = timezone.now()
+        instance.is_added_recently = now - datetime.timedelta(days=1) <= instance.timestamp <= now
+    else:
+        instance.is_added_recently = False
+    instance.save()
