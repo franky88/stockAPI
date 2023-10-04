@@ -23,6 +23,16 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class Supplier(models.Model):
+    name = models.CharField(max_length=200)
+    address = models.CharField(max_length=200, blank=True, null=True)
+    contact = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=False)
+    timestamp = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
 def image_directory_path(instance, filename):
     print(filename)
     return 'images_{0}/{1}'.format(instance, filename)
@@ -32,9 +42,11 @@ class Product(TimeStampedModel):
     bar_code = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, blank=True, null=True)
     cost = models.FloatField()
     price = models.FloatField()
     quantity = models.IntegerField()
+    with_serial = models.BooleanField(default=False)
     image = models.ImageField(upload_to=image_directory_path, blank=True, null=True)
     on_display = models.BooleanField(default=True, verbose_name="this product is available?")
 
@@ -52,6 +64,7 @@ class ProductTransaction(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     cost = models.FloatField(blank=True, null=True)
     quantity = models.PositiveIntegerField(default=1)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -81,12 +94,23 @@ class ProductTransaction(models.Model):
     def __str__(self):
         return self.product.name
     
+class Customer(models.Model):
+    name = models.CharField(max_length=200)
+    address = models.TextField(blank=True, null=True)
+    contact = models.CharField(max_length=20, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
 class OrderTransaction(models.Model):
     order_id = models.CharField(max_length=12, unique=True)
-    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.FloatField()
     quantity = models.PositiveIntegerField()
+    serials = models.TextField(blank=True, null=True)
     is_paid = models.BooleanField(default=False)
     is_accepted = models.BooleanField(default=False)
     remarks = models.CharField(max_length=200, blank=True, null=True)
@@ -121,6 +145,32 @@ class OrderTransaction(models.Model):
     def __str__(self):
         return self.customer.username
 
+class RepairType(models.Model):
+    name = models.CharField(max_length=255)
+    service_fee = models.FloatField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+    
+class RepairStatus(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class Repair(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, blank=True, null=True)
+    repair_type = models.ForeignKey(RepairType, on_delete=models.SET_NULL, blank=True, null=True)
+    product_descriptions = models.TextField()
+    problems = models.TextField(blank=True, null=True)
+    status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.customer.name
 
 class ItemRequest(models.Model):
     request_by = models.ForeignKey(User, on_delete=models.CASCADE)

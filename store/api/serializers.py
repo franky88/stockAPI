@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from store.models import Product, Category, ProductTransaction, OrderTransaction
+from store.models import Product, Category, ProductTransaction, OrderTransaction, Supplier
 from django.contrib.auth.models import User
 
 
@@ -23,16 +23,18 @@ class ProductSerializers(serializers.ModelSerializer):
             'bar_code',
             'name',
             'category',
+            'supplier',
             'cost',
             'price',
             'quantity',
             'image',
             'on_display',
             'created',
-            'total_cost'
+            'total_cost',
+            'with_serial'
         ]
 
-class ProductTransactionSerializers(serializers.ModelSerializer):
+class ProductTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductTransaction
         fields = [
@@ -40,10 +42,11 @@ class ProductTransactionSerializers(serializers.ModelSerializer):
             'user',
             'product',
             'cost',
-            'quantity'
+            'quantity',
+            'supplier',
         ]
 
-class OrderTransactionSerializers(serializers.ModelSerializer):
+class OrderTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderTransaction
         fields = [
@@ -53,14 +56,21 @@ class OrderTransactionSerializers(serializers.ModelSerializer):
             'product',
             'price',
             'quantity',
+            'serials',
             'total_cost',
             'is_accepted',
             'is_paid',
             'remarks',
+            'created',
             'is_recent_orders'
         ]
 
-class UserSerializers(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'get_short_name', 'email', 'last_login', 'date_joined']
+
+class SupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Supplier
+        fields = ['name', 'address', 'contact', 'is_active']

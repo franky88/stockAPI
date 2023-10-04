@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2>Dashboard</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group me-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1">
+        <svg class="bi"><use xlink:href="#calendar3"/></svg>
+        This week
+      </button>
+    </div>
+</div>
+<div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+    <div class="col d-flex align-items-start">
+      <div class="card border-1 shadow-sm" style="width:200em">
+        <div class="card-body">
+            <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3 float-end">
+                <svg width="1em" height="1em"><use xlink:href="#cart"/></svg>
+            </div>
+            <span class="text-muted">Products</span>
+            <span>
+                <h3><strong>{{ total_products }}</strong> products on display</h3>
+            </span>
+            <a href="" class="btn btn-outline-primary btn-sm">View products</a>
+        </div>
+      </div>
+    </div>
+    <div class="col d-flex align-items-start">
+      <div class="card border-1 shadow-sm" style="width:200em">
+        <div class="card-body">
+            <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3 float-end">
+                <svg width="1em" height="1em"><use xlink:href="#people"/></svg>
+            </div>
+            <span class="text-muted">Customers</span>
+            <span>
+                <h3><strong>{{ total_customers }}</strong> registered customers</h3>
+            </span>
+            <a href="" class="btn btn-outline-primary btn-sm">View customers</a>
+        </div>
+      </div>
+    </div>
+    <div class="col d-flex align-items-start">
+        <div class="card border-1 shadow-sm" style="width:200em">
+            <div class="card-body">
+                <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3 float-end">
+                    <svg width="1em" height="1em"><use xlink:href="#puzzle"/></svg>
+                </div>
+                <span class="text-muted">Repairs</span>
+                <span>
+                    <h3><strong>{{ total_repairs }}</strong> total repairs</h3>
+                </span>
+                <a href="" class="btn btn-outline-primary btn-sm">View customers</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

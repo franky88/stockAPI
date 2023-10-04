@@ -1,9 +1,9 @@
-from store.models import Product, Category, ProductTransaction, OrderTransaction
+from store.models import Product, Category, ProductTransaction, OrderTransaction, Supplier
 from rest_framework import permissions, viewsets, status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from store.api.serializers import ProductSerializers, CategorySerializer, ProductTransactionSerializers, OrderTransactionSerializers, UserSerializer
+from store.api.serializers import ProductSerializers, CategorySerializer, ProductTransactionSerializer, OrderTransactionSerializer, UserSerializer, SupplierSerializer
 from rest_framework.response import Response
 from store.cartitems import Cart
 from django.core import serializers
@@ -22,7 +22,7 @@ class ProductViewSets(viewsets.ModelViewSet):
     """
     queryset = Product.objects.all()
     serializer_class = ProductSerializers
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     @action(detail=False)
     def recent_products(self, request):
@@ -37,6 +37,16 @@ class ProductViewSets(viewsets.ModelViewSet):
     @action(detail=False)
     def out_of_stock(self, request):
         products = Product.objects.filter(quantity=0)
+        page = self.paginate_queryset(products)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(products, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False)
+    def with_serial(self, request):
+        products = Product.objects.filter(with_serial=True)
         page = self.paginate_queryset(products)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -100,11 +110,11 @@ class ProductTransactionViewSets(viewsets.ModelViewSet):
     List all product transactions, or create a new product transaction.
     """
     queryset = ProductTransaction.objects.all()
-    serializer_class = ProductTransactionSerializers
+    serializer_class = ProductTransactionSerializer
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        transaction = ProductTransactionSerializers(data=request.data)
+        transaction = ProductTransactionSerializer(data=request.data)
         if transaction.is_valid():
             instance = transaction.save()
             instance.user = request.user
@@ -124,7 +134,7 @@ class OrderTransactionViewSets(viewsets.ModelViewSet):
     List all order transactions, or create a new order transaction.
     """
     queryset = OrderTransaction.objects.all()
-    serializer_class = OrderTransactionSerializers
+    serializer_class = OrderTransactionSerializer
     permission_classes = [IsAuthenticated]
 
     @action(detail=False)
@@ -186,7 +196,7 @@ class OrderTransactionViewSets(viewsets.ModelViewSet):
             else:
                 obj.is_accepted = True
                 obj.save()
-            serializer = OrderTransactionSerializers(obj)
+            serializer = OrderTransactionSerializer(obj)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Missing 'is_accepted' in request data"}, status=status.HTTP_400_BAD_REQUEST)
@@ -199,15 +209,13 @@ class OrderTransactionViewSets(viewsets.ModelViewSet):
             if obj.is_accepted:
                 obj.is_accepted = False
                 obj.save()
-                serializer = OrderTransactionSerializers(obj)
+                serializer = OrderTransactionSerializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "Order aleady unaccepted!"}, status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"detail": "Missing 'is_accepted' in request data"}, status=status.HTTP_400_BAD_REQUEST)
         
-
-
 class ProductOrderViewSets(viewsets.ViewSet):
     """
     List all product in cart, update and delete items in the cart.
@@ -261,3 +269,11 @@ class ProductOrderViewSets(viewsets.ViewSet):
             order.save()
         cart.clear()
         return Response(status=status.HTTP_200_OK)
+    
+class SupplierViewSets(viewsets.ModelViewSet):
+    """
+    List all supplier, or create a new supplier.
+    """
+    queryset = Supplier.objects.all()
+    serializer_class = SupplierSerializer
+    permission_classes = [IsAuthenticated]
