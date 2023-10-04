@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views import View
-from store.models import Product, Customer, Repair
+from store.models import Product, Customer, Repair, OrderTransaction
 from django.utils import timezone
 import datetime
 
@@ -20,6 +20,7 @@ class DashboardView(View):
         on_going_repairs = Repair.objects.filter(status__name="on going").count()
         pending_repairs = Repair.objects.filter(status__name="pending").count()
         repaired_repairs = Repair.objects.filter(status__name="repaired").count()
+        orders = OrderTransaction.objects.all()
         context = {
             "title": "Dashboard",
             "total_products": total_products,
@@ -31,6 +32,7 @@ class DashboardView(View):
             "active_customers": active_customers,
             "on_going_repairs": on_going_repairs,
             "pending_repairs": pending_repairs,
-            "repaired_repairs": repaired_repairs
+            "repaired_repairs": repaired_repairs,
+            "orders": orders
         }
         return render(request, self.template_name, context)
