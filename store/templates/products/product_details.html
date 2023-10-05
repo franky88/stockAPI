@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-2 border-bottom">
+    <h2>{{title|title}}</h2>
+    <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group me-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+          Share
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+          Export
+        </button>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#addProduct">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+        </svg>
+        Edit product
+      </button>
+    </div>
+</div>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'store:products_list' %}">Products</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{title|title}}</li>
+    </ol>
+</nav>
+
+<div class="row py-3">
+    <div class="col-sm-12">
+        <div class="d-flex gap-5">
+            <div>
+                <h1>{{instance.name|title}}</h1>
+                {% if instance.image %}
+                <img style="width: 30em;" src="{{ instance.image.url }}" alt="">
+                {% endif %}
+            </div>
+            <div>
+                <h1>{{instance.price}}</h1>
+                <h3>{{instance.model}}</h3>
+            </div>
+        </div>
+        
+    </div>
+</div>
+  
+  <!-- Modal -->
+<div class="modal fade" id="addProduct" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Add product</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="" class="form" method="POST">
+        <div class="modal-body">
+            {% csrf_token %}
+            {{ form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary btn-sm">Add product</button>
+        </div>
+        </form>
+      </div>
+    </div>
+</div>
+{% endblock %}

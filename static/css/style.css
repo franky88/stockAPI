@@ -36,7 +36,7 @@
 .icon-square {
   width: 4rem;
   height: 4rem;
-  border-radius: 0.75rem;
+  border-radius: 0.25rem;
 }
 
 .nav-scroller {
@@ -80,4 +80,7 @@
 
 .bd-mode-toggle .dropdown-menu .active .bi {
   display: block !important;
+}
+a:link, a:visited, a:hover, a:active{
+  text-decoration: none;
 }

@@ -81,3 +81,6 @@
 .bd-mode-toggle .dropdown-menu .active .bi {
   display: block !important;
 }
+a:link, a:visited, a:hover, a:active{
+  text-decoration: none;
+}
