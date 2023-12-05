@@ -7,7 +7,8 @@ from store.api.views import (
                             ProductTransactionViewSets,
                             OrderTransactionViewSets,
                             ProductOrderViewSets,
-                            SupplierViewSets
+                            SupplierViewSets,
+                            PettyCashViewSets
                              )
 from rest_framework.urlpatterns import format_suffix_patterns
 
@@ -20,6 +21,7 @@ router.register(r'cart', ProductOrderViewSets, basename="cart")
 router.register(r'products', ProductViewSets, basename="products")
 router.register(r'orders', OrderTransactionViewSets, basename="orders")
 router.register(r'suppliers', SupplierViewSets, basename="supplier")
+router.register(r'petty-cash', PettyCashViewSets, basename="petty-cash")
 
 urlpatterns = [
     path('', include(router.urls)),

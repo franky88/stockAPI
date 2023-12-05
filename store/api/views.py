@@ -1,9 +1,17 @@
-from store.models import Product, Category, ProductTransaction, OrderTransaction, Supplier
+from store.models import Product, Category, ProductTransaction, OrderTransaction, Supplier, PettyCash
 from rest_framework import permissions, viewsets, status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from store.api.serializers import ProductSerializers, CategorySerializer, ProductTransactionSerializer, OrderTransactionSerializer, UserSerializer, SupplierSerializer
+from store.api.serializers import (
+    ProductSerializers,
+    CategorySerializer,
+    ProductTransactionSerializer,
+    OrderTransactionSerializer,
+    UserSerializer,
+    SupplierSerializer,
+    PettyCashSerializer
+    )
 from rest_framework.response import Response
 from store.cartitems import Cart
 from django.core import serializers
@@ -277,3 +285,31 @@ class SupplierViewSets(viewsets.ModelViewSet):
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
     permission_classes = [IsAuthenticated]
+
+class PettyCashViewSets(viewsets.ModelViewSet):
+    """
+    List all petty cash, or create a new supplier.
+    """
+    queryset = PettyCash.objects.all()
+    serializer_class = PettyCashSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False)
+    def approved_petty(self, request):
+        petty = PettyCash.objects.filter(is_approved=True)
+        page = self.paginate_queryset(petty)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(petty, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False)
+    def unapproved_petty(self, request):
+        petty = PettyCash.objects.filter(is_approved=False)
+        page = self.paginate_queryset(petty)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(petty, many=True)
+        return Response(serializer.data)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from store.models import Product, Category, ProductTransaction, OrderTransaction, Supplier
+from store.models import Product, Category, ProductTransaction, OrderTransaction, Supplier, PettyCash
 from django.contrib.auth.models import User
 
 
@@ -74,3 +74,8 @@ class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
         fields = ['name', 'address', 'contact', 'is_active']
+
+class PettyCashSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PettyCash
+        fields = ['request_by', 'purpose', 'amount', 'is_approved']

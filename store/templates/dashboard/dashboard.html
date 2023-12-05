@@ -37,7 +37,7 @@
             hidden products
           </span>
         </div>
-        <a href="{% url 'store:products_list' %}" class="btn btn-outline-primary btn-sm">View products</a>
+        <a href="{% url 'store:products_list' %}" class="btn btn-outline-primary btn-sm border-0">View products</a>
     </div>
   </div>
   <div class="col d-flex align-items-start">
@@ -59,7 +59,7 @@
           active
         </span>
       </div>
-      <a href="" class="btn btn-outline-primary btn-sm">View customers</a>
+      <a href="" class="btn btn-outline-primary btn-sm border-0">View customers</a>
     </div>
   </div>
   <div class="col d-flex align-items-start">
@@ -80,7 +80,7 @@
           {{repaired_repairs}} repaired
         </span>
       </div>
-      <a href="" class="btn btn-outline-primary btn-sm">View repairs</a>
+      <a href="" class="btn btn-outline-primary btn-sm border-0">View repairs</a>
     </div>
   </div>
 </div>
@@ -88,7 +88,7 @@
 <h3>Recent orders</h3>
 <div class="table-responsive small">
   <table class="table table-hover table-sm rounded-1 overflow-hidden">
-    <thead class="table-dark">
+    <thead class="table-light">
       <tr>
         <th>#</th>
         <th>Date</th>
@@ -113,7 +113,7 @@
       {% endfor %}
     </tbody>
   </table>
-  <a href="" class="btn btn-outline-primary btn-sm">View orders</a>
+  <a href="" class="btn btn-outline-primary btn-sm border-0">View orders</a>
 </div>
 
 {% endblock %}
