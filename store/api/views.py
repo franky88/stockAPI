@@ -1,8 +1,7 @@
 from store.models import Product, Category, ProductTransaction, OrderTransaction, Supplier, PettyCash
-from rest_framework import permissions, viewsets, status
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from store.api.serializers import (
     ProductSerializers,
     CategorySerializer,
@@ -10,14 +9,27 @@ from store.api.serializers import (
     OrderTransactionSerializer,
     UserSerializer,
     SupplierSerializer,
-    PettyCashSerializer
+    PettyCashSerializer,
+    MyTokenObtainPairSerializer
     )
 from rest_framework.response import Response
 from store.cartitems import Cart
-from django.core import serializers
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+from rest_framework_simplejwt.views import TokenObtainPairView
 
+
+
+@api_view(['GET'])
+def getRoutes(request):
+    routes = [
+        "/token",
+        "/token/refresh"
+    ]
+    return Response(routes)
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 class UserViewSets(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -111,7 +123,7 @@ class CategoryViewSets(viewsets.ModelViewSet):
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 class ProductTransactionViewSets(viewsets.ModelViewSet):
     """
