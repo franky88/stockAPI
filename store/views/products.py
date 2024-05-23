@@ -52,18 +52,19 @@ class ProductDetailView(View):
         
 class ProductHideUnhideView(View):
 
-    # def get(self, request, *args, **kwargs):
-    #     porduct_code = kwargs.get('bar_code')
-    #     instance = get_object_or_404(Product, bar_code=porduct_code)
-    #     return redirect("store:products_details", instance.bar_code)
+    def get(self, request, *args, **kwargs):
+        product_code = kwargs.get('bar_code')
+        print(product_code)
+        instance = get_object_or_404(Product, bar_code=product_code)
+        return redirect("store:products_details", instance.bar_code)
     
-    def patch(self, request, *args, **kwargs):
-        porduct_code = kwargs.get('bar_code')
-        instance = get_object_or_404(Product, bar_code=porduct_code)
+    def post(self, request, *args, **kwargs):
+        product_code = kwargs.get('bar_code')
+        instance = get_object_or_404(Product, bar_code=product_code)
         if instance.on_display:
             instance.on_display = False
         else:
             instance.on_display = True
         instance.save()
-        return redirect("store:products_details", instance.bar_code)
+        return redirect("store:products_list")
 

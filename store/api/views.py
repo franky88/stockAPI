@@ -1,6 +1,6 @@
 from store.models import Product, Category, ProductTransaction, OrderTransaction, Supplier, PettyCash
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import permissions
 from rest_framework.decorators import action, api_view
 from store.api.serializers import (
     ProductSerializers,
@@ -17,6 +17,7 @@ from store.cartitems import Cart
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 
@@ -34,7 +35,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
 class UserViewSets(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
 class ProductViewSets(viewsets.ModelViewSet):
     """
@@ -42,7 +43,7 @@ class ProductViewSets(viewsets.ModelViewSet):
     """
     queryset = Product.objects.all()
     serializer_class = ProductSerializers
-    # permission_classes = [IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=False)
     def recent_products(self, request):
@@ -123,7 +124,7 @@ class CategoryViewSets(viewsets.ModelViewSet):
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = [IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
 class ProductTransactionViewSets(viewsets.ModelViewSet):
     """
@@ -131,7 +132,7 @@ class ProductTransactionViewSets(viewsets.ModelViewSet):
     """
     queryset = ProductTransaction.objects.all()
     serializer_class = ProductTransactionSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         transaction = ProductTransactionSerializer(data=request.data)
@@ -155,7 +156,7 @@ class OrderTransactionViewSets(viewsets.ModelViewSet):
     """
     queryset = OrderTransaction.objects.all()
     serializer_class = OrderTransactionSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=False)
     def unpaid_orders(self, request):
@@ -235,12 +236,12 @@ class OrderTransactionViewSets(viewsets.ModelViewSet):
                 return Response({"message": "Order aleady unaccepted!"}, status=status.HTTP_202_ACCEPTED)
         else:
             return Response({"detail": "Missing 'is_accepted' in request data"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
 class ProductOrderViewSets(viewsets.ViewSet):
     """
     List all product in cart, update and delete items in the cart.
     """
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     def list(self, request):
         cart = Cart(self.request)
         queryset = cart.get_cart_data()
@@ -255,7 +256,7 @@ class ProductOrderViewSets(viewsets.ViewSet):
         else:
             return Response({'message': 'No items in the cart'}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(detail=False, methods=['DELETE'])
+    @action(detail=False, methods=['GET','DELETE'])
     def clear_cart_items(self, request, format=None):
         cart = Cart(self.request)
         items = cart.clear()
@@ -264,7 +265,7 @@ class ProductOrderViewSets(viewsets.ViewSet):
         else:
             return Response({'message': 'No items in the cart'}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(detail=True, methods=['DELETE'])
+    @action(detail=True, methods=['GET','DELETE'])
     def delete_cart_item(self, request, pk=None, format=None):
         instance = get_object_or_404(Product, pk=pk)
         cart = Cart(self.request)
@@ -274,12 +275,12 @@ class ProductOrderViewSets(viewsets.ViewSet):
         else:
             return Response({'message': 'No items in the cart'}, status=status.HTTP_404_NOT_FOUND)
         
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['GET','POST'])
     def process_order(self, request, format=None):
         cart = Cart(self.request)
         for item in cart:
             order = OrderTransaction(
-                customer = request.user,
+                # customer = request.user,
                 product = item['product'],
                 price = item['price'],
                 quantity = item['quantity']
@@ -296,7 +297,56 @@ class SupplierViewSets(viewsets.ModelViewSet):
     """
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=False)
+    def inactive(self, request):
+        active = Supplier.objects.filter(is_active=False)
+        page = self.paginate_queryset(active)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(active, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False)
+    def active(self, request):
+        active = Supplier.objects.filter(is_active=True)
+        page = self.paginate_queryset(active)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(active, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['GET','PUT'])
+    def activate(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj is not None:
+            if obj.is_active:
+                return Response({"message": "Order aleady activated!"}, status=status.HTTP_202_ACCEPTED)
+            else:
+                obj.is_active = True
+                obj.save()
+            serializer = SupplierSerializer(obj)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Missing 'is_active' in request data"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    @action(detail=True, methods=['GET','PUT'])
+    def deactivate(self, request, *args, **kwargs):
+        obj = self.get_object()
+        print(obj)
+        if obj is not None:
+            if obj.is_active:
+                obj.is_active = False
+                obj.save()
+                serializer = SupplierSerializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Order aleady deactivated!"}, status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response({"detail": "Missing 'is_active' in request data"}, status=status.HTTP_400_BAD_REQUEST)
 
 class PettyCashViewSets(viewsets.ModelViewSet):
     """
@@ -304,7 +354,9 @@ class PettyCashViewSets(viewsets.ModelViewSet):
     """
     queryset = PettyCash.objects.all()
     serializer_class = PettyCashSerializer
-    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['request_by__username', 'is_approved', 'created', 'updated']
+    # permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=False)
     def approved_petty(self, request):
