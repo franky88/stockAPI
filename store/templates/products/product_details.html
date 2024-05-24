@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
 
 {% block content %}
@@ -31,37 +32,57 @@
 <div class="row py-3">
     <div class="col-sm-12">
         <div class="d-flex gap-5">
-            <div>
-                <h1>{{instance.name|title}}</h1>
+          <div class="p-2 w-25">
+            <div id="carouselExample" class="carousel slide">
+              <div class="carousel-inner">
                 {% if instance.image %}
-                <img style="width: 30em;" src="{{ instance.image.url }}" alt="">
+                  {% for image in instance.image.all %}
+                  <div class="carousel-item active">
+                    <img src="{{ image.image.url }}" class="img-thumbnail float-start" alt="...">
+                  </div>
+                  {% endfor %}
                 {% endif %}
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
             </div>
-            <div>
-                <h1>{{instance.price}}</h1>
-                <h3>{{instance.model}}</h3>
-            </div>
+          </div>
+          <div class="p-2 w-100">
+            <strong>{{instance.name|upper}}</strong> | <small class="text-muted">{{instance.category|title}}</small>
+            <h2>PHP {{instance.price}}</h2>
+            <h3>{{instance.model}}</h3>
+            <small>QTY: {{instance.quantity}} in stocks</small>
+            <button type="button" class="btn btn-sm btn-outline-info border-0 d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#editProduct">
+              Edit product
+            </button>
+          </div>
         </div>
         
     </div>
 </div>
   
   <!-- Modal -->
-<div class="modal fade" id="addProduct" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="editProduct" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Add product</h1>
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit product</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form action="" class="form" method="POST">
+        <form action="{% url 'store:products_details' instance.bar_code %}" enctype="multipart/form-data" class="form" method="POST">
         <div class="modal-body">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ form|crispy }}
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary btn-sm">Add product</button>
+          <button type="submit" class="btn btn-primary btn-sm">Update</button>
         </div>
         </form>
       </div>

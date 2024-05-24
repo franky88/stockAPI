@@ -39,6 +39,12 @@ def image_directory_path(instance, filename):
     print(filename)
     return 'images_{0}/{1}'.format(instance, filename)
 
+class Image(models.Model):
+    image = models.ImageField(upload_to=image_directory_path, blank=True, null=True)
+
+    def __str__(self):
+        return self.image.name
+
 class Product(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     bar_code = models.CharField(max_length=20, unique=True)
@@ -49,7 +55,8 @@ class Product(TimeStampedModel):
     price = models.FloatField()
     quantity = models.IntegerField()
     with_serial = models.BooleanField(default=False)
-    image = models.ImageField(upload_to=image_directory_path, blank=True, null=True)
+    warranty_in_months = models.IntegerField(blank=True, null=True)
+    image = models.ManyToManyField(Image, blank=True, null=True)
     on_display = models.BooleanField(default=True, verbose_name="this product is available?")
 
     @property

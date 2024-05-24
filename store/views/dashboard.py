@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views import View
 from store.models import Product, Customer, Repair, OrderTransaction
 from django.utils import timezone
+from store.cartitems import Cart
 import datetime
 
 class DashboardView(View):
@@ -10,6 +11,9 @@ class DashboardView(View):
     """
     template_name = 'dashboard/dashboard.html'
     def get(self, request):
+        cart = Cart(self.request)
+        items_in_cart = cart.get_cart_data()
+        items = items_in_cart['items']
         total_products = Product.objects.all().count()
         total_display_products = Product.objects.filter(on_display=True).count()
         total_hidden_products = Product.objects.filter(on_display=False).count()
@@ -33,6 +37,8 @@ class DashboardView(View):
             "on_going_repairs": on_going_repairs,
             "pending_repairs": pending_repairs,
             "repaired_repairs": repaired_repairs,
-            "orders": orders
+            "orders": orders,
+            "items_in_cart": items_in_cart,
+            "items": items
         }
         return render(request, self.template_name, context)
