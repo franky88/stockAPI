@@ -56,7 +56,7 @@ class Product(TimeStampedModel):
     quantity = models.IntegerField()
     with_serial = models.BooleanField(default=False)
     warranty_in_months = models.IntegerField(blank=True, null=True)
-    image = models.ManyToManyField(Image, blank=True, null=True)
+    image = models.ForeignKey(Image,  on_delete=models.SET_NULL, null=True, blank=True)
     on_display = models.BooleanField(default=True, verbose_name="this product is available?")
 
     @property

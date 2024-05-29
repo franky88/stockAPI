@@ -40,6 +40,16 @@ class ProductSerializers(serializers.ModelSerializer):
             'with_serial'
         ]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['category'] = instance.category.name
+        data['user'] = instance.user.username
+        if instance.image:
+            data['image'] = 'http://localhost:8000'+instance.image.image.url
+        else:
+            data['image'] = instance.image
+        return data
+
 class ProductTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductTransaction
