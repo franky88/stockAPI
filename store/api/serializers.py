@@ -10,11 +10,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         return token
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'groups']
-
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -84,7 +79,7 @@ class OrderTransactionSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'get_short_name', 'email', 'last_login', 'date_joined']
+        fields = ['id','first_name', 'last_name', 'get_short_name', 'email', 'last_login', 'date_joined']
 
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:

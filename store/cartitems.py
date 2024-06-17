@@ -36,11 +36,19 @@ class Cart(object):
             quantity = item_data['quantity']
             price = Decimal(item_data['price'])
             subtotal = quantity * price
+            image = ""
+            if product.image.image.url == "":
+                image = ""
+            else:
+                image = product.image.image.url
+
+            print(image)
 
             cart_data['items'][product_id] = {
                 'product_id': product_id,
                 'name': product.name,
                 'quantity': quantity,
+                'image': image,
                 'price': str(price),
                 'subtotal': str(subtotal),
             }
